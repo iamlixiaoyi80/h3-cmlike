@@ -26,6 +26,7 @@
         :showResult="showResult"
         :readyToMove="readyToMove"
         @roll="startRoll"
+        @stop="stopRoll"
         @confirmMove="confirmMove"
       />
 

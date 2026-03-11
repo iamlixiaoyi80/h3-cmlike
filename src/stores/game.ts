@@ -173,18 +173,18 @@ export const useGameStore = defineStore('game', () => {
     isRolling.value = true
     canStop.value = true
     showResult.value = false
-    // 动画期间先显示随机数
-    diceValue.value = Math.floor(Math.random() * 6) + 1
+    // 滚动期间不设置 diceValue，保持显示"?"
+  }
 
-    // 1.5秒后自动停止并显示结果
-    setTimeout(() => {
-      isRolling.value = false
-      canStop.value = false
-      showResult.value = true
-      readyToMove.value = true
-      // 最终点数
-      diceValue.value = Math.floor(Math.random() * 6) + 1
-    }, 1500)
+  // 停止骰子
+  function stopRoll() {
+    if (!canStop.value) return
+    // 生成最终点数
+    diceValue.value = Math.floor(Math.random() * 6) + 1
+    isRolling.value = false
+    canStop.value = false
+    showResult.value = true
+    readyToMove.value = true
   }
 
   // 确认移动
@@ -193,16 +193,6 @@ export const useGameStore = defineStore('game', () => {
     readyToMove.value = false
     showResult.value = false
 
-    // 移动玩家
-    movePlayer(diceValue.value)
-  }
-  
-  // 停止骰子
-  function stopRoll() {
-    if (!canStop.value) return
-    isRolling.value = false
-    canStop.value = false
-    
     // 移动玩家
     movePlayer(diceValue.value)
   }

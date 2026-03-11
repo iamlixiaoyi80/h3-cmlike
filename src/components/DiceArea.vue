@@ -19,6 +19,16 @@
       <span class="btn-text">掷骰子</span>
     </button>
 
+    <!-- 停止按钮 -->
+    <button
+      v-if="canStop"
+      class="stop-btn"
+      @click="handleStop"
+    >
+      <span class="btn-icon">⏹️</span>
+      <span class="btn-text">点击停止</span>
+    </button>
+
     <!-- 结果显示 -->
     <div v-if="showResult && readyToMove" class="result-display">
       <div class="result-text">
@@ -61,12 +71,19 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   roll: []
+  stop: []
   confirmMove: []
 }>()
 
 function handleRoll() {
   if (props.diceCount > 0 && !props.isRolling && !props.readyToMove) {
     emit('roll')
+  }
+}
+
+function handleStop() {
+  if (props.canStop) {
+    emit('stop')
   }
 }
 
@@ -140,7 +157,7 @@ function handleConfirmMove() {
 }
 
 /* 掷骰子按钮 */
-.roll-btn, .move-btn {
+.roll-btn, .move-btn, .stop-btn {
   width: 100%;
   padding: 12px 20px;
   background: linear-gradient(135deg, #d4af37 0%, #b8962e 100%);
@@ -158,13 +175,22 @@ function handleConfirmMove() {
   transition: all 0.2s ease;
 }
 
-.roll-btn:hover:not(:disabled), .move-btn:hover {
+.roll-btn:hover:not(:disabled), .move-btn:hover, .stop-btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 16px rgba(212, 175, 55, 0.4);
 }
 
-.roll-btn:active:not(:disabled), .move-btn:active {
+.roll-btn:active:not(:disabled), .move-btn:active, .stop-btn:active {
   transform: translateY(0);
+}
+
+.stop-btn {
+  background: linear-gradient(135deg, #FF6B6B 0%, #ee5a52 100%);
+  box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+}
+
+.stop-btn:hover {
+  box-shadow: 0 6px 16px rgba(255, 107, 107, 0.4);
 }
 
 .roll-btn:disabled {
