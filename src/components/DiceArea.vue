@@ -2,29 +2,41 @@
   <div class="dice-area">
     <!-- 骰子显示 -->
     <div class="dice-display">
-      <div 
-        class="dice"
-        :class="{ rolling: isRolling, 'can-stop': canStop }"
-        @click="handleDiceClick"
-      >
-        <div class="dice-face">{{ diceValue }}</div>
+      <div class="dice" :class="{ rolling: isRolling }">
+        <div class="dice-face">{{ isRolling ? '?' : diceValue }}</div>
         <div v-if="isRolling" class="dice-glow"></div>
       </div>
     </div>
-    
-    <!-- 操作提示 -->
-    <div class="action-hint">
-      <template v-if="!isRolling && !canStop">
-        <span class="hint-text">点击骰子掷出</span>
-      </template>
-      <template v-else-if="isRolling && canStop">
-        <span class="hint-text highlight">点击停止！</span>
-      </template>
-      <template v-else>
-        <span class="hint-text">移动中...</span>
-      </template>
+
+    <!-- 掷骰子按钮 -->
+    <button
+      v-if="!isRolling && !showResult && !readyToMove"
+      class="roll-btn"
+      :disabled="diceCount <= 0"
+      @click="handleRoll"
+    >
+      <span class="btn-icon">🎲</span>
+      <span class="btn-text">掷骰子</span>
+    </button>
+
+    <!-- 结果显示 -->
+    <div v-if="showResult && readyToMove" class="result-display">
+      <div class="result-text">
+        <span class="result-label">你掷出了</span>
+        <span class="result-value">{{ diceValue }}</span>
+        <span class="result-label">点！</span>
+      </div>
+      <button class="move-btn" @click="handleConfirmMove">
+        <span class="btn-icon">▶️</span>
+        <span class="btn-text">开始移动</span>
+      </button>
     </div>
-    
+
+    <!-- 操作提示 -->
+    <div v-if="isRolling" class="action-hint">
+      <span class="hint-text highlight">骰子滚动中...</span>
+    </div>
+
     <!-- 骰子数量 -->
     <div class="dice-count">
       <span class="dice-icon">🎲</span>
@@ -43,19 +55,23 @@ const props = defineProps<{
   diceValue: number
   isRolling: boolean
   canStop: boolean
+  showResult: boolean
+  readyToMove: boolean
 }>()
 
 const emit = defineEmits<{
   roll: []
-  stop: []
+  confirmMove: []
 }>()
 
-function handleDiceClick() {
-  if (props.isRolling && props.canStop) {
-    emit('stop')
-  } else if (!props.isRolling && !props.canStop && props.diceCount > 0) {
+function handleRoll() {
+  if (props.diceCount > 0 && !props.isRolling && !props.readyToMove) {
     emit('roll')
   }
+}
+
+function handleConfirmMove() {
+  emit('confirmMove')
 }
 </script>
 
@@ -90,18 +106,9 @@ function handleDiceClick() {
   user-select: none;
 }
 
-.dice:hover {
-  transform: scale(1.05);
-  box-shadow: 0 6px 16px rgba(0,0,0,0.4);
-}
-
 .dice.rolling {
   animation: diceRoll 0.15s infinite;
-}
-
-.dice.can-stop {
-  animation: diceShake 0.1s infinite;
-  box-shadow: 0 0 20px rgba(212, 175, 55, 0.5);
+  cursor: default;
 }
 
 @keyframes diceRoll {
@@ -110,12 +117,6 @@ function handleDiceClick() {
   50% { transform: rotateX(90deg) rotateY(90deg); }
   75% { transform: rotateX(0deg) rotateY(90deg); }
   100% { transform: rotateX(0deg) rotateY(0deg); }
-}
-
-@keyframes diceShake {
-  0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-2px); }
-  75% { transform: translateX(2px); }
 }
 
 .dice-face {
@@ -136,6 +137,107 @@ function handleDiceClick() {
 @keyframes glow {
   from { opacity: 0.5; }
   to { opacity: 1; }
+}
+
+/* 掷骰子按钮 */
+.roll-btn, .move-btn {
+  width: 100%;
+  padding: 12px 20px;
+  background: linear-gradient(135deg, #d4af37 0%, #b8962e 100%);
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: bold;
+  color: #1a1a2e;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
+  transition: all 0.2s ease;
+}
+
+.roll-btn:hover:not(:disabled), .move-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(212, 175, 55, 0.4);
+}
+
+.roll-btn:active:not(:disabled), .move-btn:active {
+  transform: translateY(0);
+}
+
+.roll-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.move-btn {
+  background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+}
+
+.move-btn:hover {
+  box-shadow: 0 6px 16px rgba(76, 175, 80, 0.4);
+}
+
+.btn-icon {
+  font-size: 18px;
+}
+
+.btn-text {
+  font-size: 16px;
+}
+
+/* 结果显示 */
+.result-display {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.result-text {
+  background: rgba(212, 175, 55, 0.1);
+  border: 2px solid #d4af37;
+  border-radius: 8px;
+  padding: 12px;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.result-label {
+  font-size: 16px;
+  color: #d4af37;
+  font-weight: 500;
+}
+
+.result-value {
+  font-size: 32px;
+  font-weight: bold;
+  color: #d4af37;
+  text-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
+  animation: bounce 0.5s ease;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.2); }
 }
 
 .action-hint {

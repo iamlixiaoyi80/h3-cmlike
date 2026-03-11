@@ -23,8 +23,10 @@
         :diceValue="diceValue"
         :isRolling="isRolling"
         :canStop="canStop"
+        :showResult="showResult"
+        :readyToMove="readyToMove"
         @roll="startRoll"
-        @stop="stopRoll"
+        @confirmMove="confirmMove"
       />
 
       <!-- 底部导航栏 -->
@@ -83,9 +85,11 @@ const {
   diceValue,
   isRolling,
   canStop,
+  showResult,
+  readyToMove,
   eventMessage
 } = storeToRefs(store)
-const { selectRace, startRoll, stopRoll, recruitCreature } = store
+const { selectRace, startRoll, stopRoll, confirmMove, recruitCreature } = store
 
 // 弹窗状态
 const activeTab = ref('')
