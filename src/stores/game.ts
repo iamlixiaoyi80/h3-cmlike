@@ -16,9 +16,12 @@ export interface Creature {
   name: string
   upgradedName: string
   level: number
+  tier: number
   count: number
   attack: number
   defense: number
+  speed: number
+  hp: number
   cost: number
 }
 
@@ -30,8 +33,13 @@ export interface Hero {
   rarity: 'common' | 'rare' | 'epic' | 'legendary'
   skill: string
   stars: number
+  level: number
   attack: number
   defense: number
+  magicPower: number
+  speed: number
+  experience: number
+  maxExperience: number
 }
 
 // 城堡
@@ -39,8 +47,11 @@ export interface Castle {
   race: 'knight' | 'elf' | 'undead'
   name: string
   level: number
+  defense: number
+  goldProduction: number
   buildings: Building[]
   creatures: Creature[]
+  availableCreatures: Creature[]
 }
 
 // 建筑
@@ -128,16 +139,27 @@ export const useGameStore = defineStore('game', () => {
       race,
       name: raceNames[race] || '未知城堡',
       level: 1,
+      defense: 100,
+      goldProduction: 500,
       buildings: [
         { id: 'gold_mine', name: '金矿', type: 'resource', level: 1, maxLevel: 100 },
         { id: 'creature_1', name: (firstCreature?.name || '生物') + '巢穴', type: 'creature', level: 1, maxLevel: 100 },
       ],
-      creatures: creatures
+      creatures: creatures.map(c => ({ ...c })),
+      availableCreatures: creatures.map(c => ({ ...c, count: 0 }))
     }
     
     // 初始英雄
+    // 初始英雄
     const raceHeroes = getRaceHeroes(race)
-    heroes.value = raceHeroes.slice(0, 1)
+    heroes.value = raceHeroes.slice(0, 1).map(h => ({
+      ...h,
+      level: 1,
+      magicPower: 2,
+      speed: 5,
+      experience: 0,
+      maxExperience: 100
+    }))
     
     gamePhase.value = 'playing'
   }
@@ -267,12 +289,14 @@ export const useGameStore = defineStore('game', () => {
   // 招募生物
   function recruitCreature(creatureId: string) {
     if (!castle.value) return
-    
-    const creature = castle.value.creatures.find(c => c.id === creatureId)
-    if (!creature || resources.value.gold < creature.cost) return
-    
-    resources.value.gold -= creature.cost
-    creature.count++
+
+    const availableCreature = castle.value.availableCreatures.find(c => c.id === creatureId)
+    const ownedCreature = castle.value.creatures.find(c => c.id === creatureId)
+
+    if (!availableCreature || !ownedCreature || resources.value.gold < availableCreature.cost) return
+
+    resources.value.gold -= availableCreature.cost
+    ownedCreature.count++
   }
   
   // 恢复骰子
@@ -336,31 +360,31 @@ function generateMap(): MapTile[] {
 function getRaceCreatures(race: 'knight' | 'elf' | 'undead'): Creature[] {
   const creaturesByRace: Record<string, Creature[]> = {
     knight: [
-      { id: 'knight_1', name: '枪兵', upgradedName: '长枪兵', level: 1, count: 20, attack: 6, defense: 5, cost: 60 },
-      { id: 'knight_2', name: '弓箭手', upgradedName: '神射手', level: 2, count: 10, attack: 6, defense: 3, cost: 100 },
-      { id: 'knight_3', name: '狮鹫', upgradedName: '皇家狮鹫', level: 3, count: 5, attack: 8, defense: 8, cost: 200 },
-      { id: 'knight_4', name: '剑士', upgradedName: '十字军', level: 4, count: 3, attack: 10, defense: 12, cost: 300 },
-      { id: 'knight_5', name: '僧侣', upgradedName: '狂热者', level: 5, count: 2, attack: 12, defense: 7, cost: 500 },
-      { id: 'knight_6', name: '骑兵', upgradedName: '冠军骑士', level: 6, count: 1, attack: 15, defense: 15, cost: 1000 },
-      { id: 'knight_7', name: '天使', upgradedName: '大天使', level: 7, count: 0, attack: 20, defense: 20, cost: 3000 },
+      { id: 'knight_1', name: '枪兵', upgradedName: '长枪兵', level: 1, tier: 1, count: 20, attack: 6, defense: 5, speed: 4, hp: 10, cost: 60 },
+      { id: 'knight_2', name: '弓箭手', upgradedName: '神射手', level: 2, tier: 2, count: 10, attack: 6, defense: 3, speed: 5, hp: 8, cost: 100 },
+      { id: 'knight_3', name: '狮鹫', upgradedName: '皇家狮鹫', level: 3, tier: 3, count: 5, attack: 8, defense: 8, speed: 7, hp: 15, cost: 200 },
+      { id: 'knight_4', name: '剑士', upgradedName: '十字军', level: 4, tier: 4, count: 3, attack: 10, defense: 12, speed: 5, hp: 20, cost: 300 },
+      { id: 'knight_5', name: '僧侣', upgradedName: '狂热者', level: 5, tier: 5, count: 2, attack: 12, defense: 7, speed: 6, hp: 18, cost: 500 },
+      { id: 'knight_6', name: '骑兵', upgradedName: '冠军骑士', level: 6, tier: 6, count: 1, attack: 15, defense: 15, speed: 8, hp: 25, cost: 1000 },
+      { id: 'knight_7', name: '天使', upgradedName: '大天使', level: 7, tier: 7, count: 0, attack: 20, defense: 20, speed: 9, hp: 30, cost: 3000 },
     ],
     elf: [
-      { id: 'elf_1', name: '半人马', upgradedName: '半人马首领', level: 1, count: 20, attack: 5, defense: 3, cost: 60 },
-      { id: 'elf_2', name: '矮人', upgradedName: '战斗矮人', level: 2, count: 10, attack: 6, defense: 7, cost: 100 },
-      { id: 'elf_3', name: '精灵', upgradedName: '大精灵', level: 3, count: 5, attack: 9, defense: 5, cost: 200 },
-      { id: 'elf_4', name: '飞马', upgradedName: '银飞马', level: 4, count: 3, attack: 9, defense: 8, cost: 300 },
-      { id: 'elf_5', name: '树精', upgradedName: '枯木卫士', level: 5, count: 2, attack: 11, defense: 13, cost: 500 },
-      { id: 'elf_6', name: '独角兽', upgradedName: '战争独角兽', level: 6, count: 1, attack: 15, defense: 14, cost: 1000 },
-      { id: 'elf_7', name: '绿龙', upgradedName: '金龙', level: 7, count: 0, attack: 18, defense: 19, cost: 3000 },
+      { id: 'elf_1', name: '半人马', upgradedName: '半人马首领', level: 1, tier: 1, count: 20, attack: 5, defense: 3, speed: 6, hp: 8, cost: 60 },
+      { id: 'elf_2', name: '矮人', upgradedName: '战斗矮人', level: 2, tier: 2, count: 10, attack: 6, defense: 7, speed: 3, hp: 12, cost: 100 },
+      { id: 'elf_3', name: '精灵', upgradedName: '大精灵', level: 3, tier: 3, count: 5, attack: 9, defense: 5, speed: 7, hp: 10, cost: 200 },
+      { id: 'elf_4', name: '飞马', upgradedName: '银飞马', level: 4, tier: 4, count: 3, attack: 9, defense: 8, speed: 9, hp: 15, cost: 300 },
+      { id: 'elf_5', name: '树精', upgradedName: '枯木卫士', level: 5, tier: 5, count: 2, attack: 11, defense: 13, speed: 4, hp: 22, cost: 500 },
+      { id: 'elf_6', name: '独角兽', upgradedName: '战争独角兽', level: 6, tier: 6, count: 1, attack: 15, defense: 14, speed: 8, hp: 24, cost: 1000 },
+      { id: 'elf_7', name: '绿龙', upgradedName: '金龙', level: 7, tier: 7, count: 0, attack: 18, defense: 19, speed: 10, hp: 35, cost: 3000 },
     ],
     undead: [
-      { id: 'undead_1', name: '骷髅', upgradedName: '骷髅勇士', level: 1, count: 30, attack: 5, defense: 4, cost: 60 },
-      { id: 'undead_2', name: '僵尸', upgradedName: '僵尸领主', level: 2, count: 15, attack: 5, defense: 5, cost: 100 },
-      { id: 'undead_3', name: '幽灵', upgradedName: '怨灵', level: 3, count: 8, attack: 7, defense: 7, cost: 200 },
-      { id: 'undead_4', name: '吸血鬼', upgradedName: '吸血鬼王', level: 4, count: 4, attack: 10, defense: 9, cost: 300 },
-      { id: 'undead_5', name: '尸巫', upgradedName: '尸巫王', level: 5, count: 2, attack: 13, defense: 10, cost: 500 },
-      { id: 'undead_6', name: '死骑', upgradedName: '地狱骑士', level: 6, count: 1, attack: 16, defense: 16, cost: 1000 },
-      { id: 'undead_7', name: '骨龙', upgradedName: '幽灵龙', level: 7, count: 0, attack: 17, defense: 16, cost: 3000 },
+      { id: 'undead_1', name: '骷髅', upgradedName: '骷髅勇士', level: 1, tier: 1, count: 30, attack: 5, defense: 4, speed: 5, hp: 6, cost: 60 },
+      { id: 'undead_2', name: '僵尸', upgradedName: '僵尸领主', level: 2, tier: 2, count: 15, attack: 5, defense: 5, speed: 3, hp: 10, cost: 100 },
+      { id: 'undead_3', name: '幽灵', upgradedName: '怨灵', level: 3, tier: 3, count: 8, attack: 7, defense: 7, speed: 8, hp: 8, cost: 200 },
+      { id: 'undead_4', name: '吸血鬼', upgradedName: '吸血鬼王', level: 4, tier: 4, count: 4, attack: 10, defense: 9, speed: 7, hp: 14, cost: 300 },
+      { id: 'undead_5', name: '尸巫', upgradedName: '尸巫王', level: 5, tier: 5, count: 2, attack: 13, defense: 10, speed: 5, hp: 18, cost: 500 },
+      { id: 'undead_6', name: '死骑', upgradedName: '地狱骑士', level: 6, tier: 6, count: 1, attack: 16, defense: 16, speed: 6, hp: 26, cost: 1000 },
+      { id: 'undead_7', name: '骨龙', upgradedName: '幽灵龙', level: 7, tier: 7, count: 0, attack: 17, defense: 16, speed: 9, hp: 32, cost: 3000 },
     ]
   }
   
@@ -369,7 +393,7 @@ function getRaceCreatures(race: 'knight' | 'elf' | 'undead'): Creature[] {
 
 // 获取种族英雄
 function getRaceHeroes(race: 'knight' | 'elf' | 'undead'): Hero[] {
-  const heroesByRace: Record<string, Hero[]> = {
+  const heroesByRace: Record<string, Omit<Hero, 'level' | 'magicPower' | 'speed' | 'experience' | 'maxExperience'>[]> = {
     knight: [
       { id: 'katherine', name: '凯瑟琳女王', race: 'knight', rarity: 'legendary', skill: '领袖光环：全军攻击+10%', stars: 3, attack: 2, defense: 2 },
       { id: 'christian', name: '克里斯丁', race: 'knight', rarity: 'epic', skill: '战斗狂热：攻击伤害+8%', stars: 2, attack: 3, defense: 1 },
@@ -386,6 +410,13 @@ function getRaceHeroes(race: 'knight' | 'elf' | 'undead'): Hero[] {
       { id: 'aisa', name: '艾莎', race: 'undead', rarity: 'rare', skill: '黑暗魔法：诅咒伤害+25%', stars: 1, attack: 3, defense: 1 },
     ]
   }
-  
-  return heroesByRace[race] || []
+
+  return heroesByRace[race]?.map(h => ({
+    ...h,
+    level: 1,
+    magicPower: 2,
+    speed: 5,
+    experience: 0,
+    maxExperience: 100
+  })) || []
 }
