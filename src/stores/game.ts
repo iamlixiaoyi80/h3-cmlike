@@ -188,13 +188,13 @@ export const useGameStore = defineStore('game', () => {
   }
 
   // 确认移动
-  function confirmMove() {
+  async function confirmMove() {
     if (!readyToMove.value) return
     readyToMove.value = false
     showResult.value = false
 
     // 移动玩家
-    movePlayer(diceValue.value)
+    await movePlayer(diceValue.value)
   }
   
   // 移动玩家（逐步移动，每格300ms）
