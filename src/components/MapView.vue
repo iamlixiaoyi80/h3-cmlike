@@ -60,23 +60,22 @@ defineProps<{
   eventMessage: string
 }>()
 
-// 计算地格位置（环形矩形布局 - 格子只在矩形边缘）
+// 计算地格位置（完整闭环矩形布局 - 类似 Monopoly 棋盘）
 function getTileTransform(index: number): string {
   // 环形布局参数
-  const cols = 5 // 外框宽度（格数）- 减少到5格让格子更大
+  const cols = 5 // 外框宽度（格数）
   const rows = 4 // 外框高度（格数）
-  const tileSize = 60 // 格子边长
-  const gap = 72 // 间距（大于格子边长）
+  const gap = 72 // 间距
 
-  // 计算环形路径的各边格子数
-  const topEdge = cols      // 顶边格子数
-  const rightEdge = rows - 1 // 右边格子数（去掉右上角）
-  const bottomEdge = cols    // 底边格子数
-  const leftEdge = rows - 2  // 左边格子数（去掉左上角和左下角）
+  // 计算矩形闭环的各边格子数
+  const topEdge = cols          // 顶边格子数 (0-4)
+  const rightEdge = rows - 1    // 右边格子数 (5-7)
+  const bottomEdge = cols       // 底边格子数 (8-12)
+  const leftEdge = rows - 1     // 左边格子数 (13-15)
 
-  const totalTiles = topEdge + rightEdge + bottomEdge + leftEdge // 总格子数 = 5 + 3 + 5 + 2 = 15
+  const totalTiles = topEdge + rightEdge + bottomEdge + leftEdge // 总格子数 = 5 + 3 + 5 + 3 = 16
 
-  // 超出范围的格子放在中间
+  // 超出范围的格子放在中间（不应该发生）
   if (index >= totalTiles) {
     const x = 190
     const y = 200
@@ -94,19 +93,19 @@ function getTileTransform(index: number): string {
 
   // 根据索引计算在环形中的位置
   if (index < topEdge) {
-    // 顶边：从左到右
+    // 顶边：从左到右 (0,1,2,3,4)
     col = index
     row = 0
   } else if (index < topEdge + rightEdge) {
-    // 右边：从上到下（去掉右上角）
+    // 右边：从上到下 (5,6,7)
     col = cols - 1
     row = (index - topEdge) + 1
   } else if (index < topEdge + rightEdge + bottomEdge) {
-    // 底边：从右到左
+    // 底边：从右到左 (8,9,10,11,12)
     col = cols - 1 - (index - topEdge - rightEdge)
     row = rows - 1
   } else {
-    // 左边：从下到上（去掉左下角和左上角）
+    // 左边：从下到上 (13,14,15)
     col = 0
     row = rows - 1 - (index - topEdge - rightEdge - bottomEdge)
   }

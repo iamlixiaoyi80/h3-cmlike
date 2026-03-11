@@ -311,8 +311,8 @@ function generateMap(): MapTile[] {
   const types: TileType[] = ['resource', 'resource', 'creature', 'chest', 'treasure', 'attack', 'special', 'empty']
   const resourceTypes: (keyof Resources)[] = ['gold', 'wood', 'ore', 'crystal', 'gems']
 
-  // 生成20个格子（4行 x 5列的矩形网格）
-  for (let i = 0; i < 20; i++) {
+  // 生成16个格子（完整闭环矩形环：顶边5格 + 右边3格 + 底边5格 + 左边3格）
+  for (let i = 0; i < 16; i++) {
     const typeIndex = Math.floor(Math.random() * types.length)
     const type = types[typeIndex] || 'empty'
     const tile: MapTile = {
