@@ -60,24 +60,59 @@ defineProps<{
   eventMessage: string
 }>()
 
-// 计算地格位置（矩形网格布局）
+// 计算地格位置（环形矩形布局 - 格子只在矩形边缘）
 function getTileTransform(index: number): string {
-  const cols = 5 // 每行5个格子
-  const rows = 4 // 共4行
+  // 环形布局参数
+  const cols = 6 // 外框宽度（格数）
+  const rows = 4 // 外框高度（格数）
   const tileSize = 40 // 格子边长
-  const gap = 50 // 间距（大于格子边长，确保不重叠）
+  const gap = 45 // 间距
 
-  const col = index % cols
-  const row = Math.floor(index / cols)
+  // 计算环形路径的各边格子数
+  const topEdge = cols      // 顶边格子数
+  const rightEdge = rows - 1 // 右边格子数（去掉右上角）
+  const bottomEdge = cols    // 底边格子数
+  const leftEdge = rows - 2  // 左边格子数（去掉左上角和左下角）
+
+  const totalTiles = topEdge + rightEdge + bottomEdge + leftEdge // 总格子数 = 6 + 3 + 6 + 2 = 17
+
+  // 超出范围的格子放在中间
+  if (index >= totalTiles) {
+    const x = 150
+    const y = 160
+    return `translate(${x}, ${y})`
+  }
 
   // 计算居中偏移
   const totalWidth = cols * gap
   const totalHeight = rows * gap
-  const offsetX = (300 - totalWidth) / 2 + gap / 2
-  const offsetY = (300 - totalHeight) / 2 + gap / 2
+  const startX = (300 - totalWidth) / 2 + gap / 2
+  const startY = (300 - totalHeight) / 2 + gap / 2
 
-  const x = offsetX + col * gap
-  const y = offsetY + row * gap
+  let col = 0
+  let row = 0
+
+  // 根据索引计算在环形中的位置
+  if (index < topEdge) {
+    // 顶边：从左到右
+    col = index
+    row = 0
+  } else if (index < topEdge + rightEdge) {
+    // 右边：从上到下（去掉右上角）
+    col = cols - 1
+    row = (index - topEdge) + 1
+  } else if (index < topEdge + rightEdge + bottomEdge) {
+    // 底边：从右到左
+    col = cols - 1 - (index - topEdge - rightEdge)
+    row = rows - 1
+  } else {
+    // 左边：从下到上（去掉左下角和左上角）
+    col = 0
+    row = rows - 1 - (index - topEdge - rightEdge - bottomEdge)
+  }
+
+  const x = startX + col * gap
+  const y = startY + row * gap
 
   return `translate(${x}, ${y})`
 }
