@@ -1,36 +1,36 @@
 <template>
   <div class="map-container">
     <div class="map-wrapper">
-      <svg class="map-svg" viewBox="0 0 300 320">
+      <svg class="map-svg" viewBox="0 0 380 400">
         <!-- 地图路径 -->
         <g class="tiles">
-          <g 
-            v-for="(tile, index) in tiles" 
+          <g
+            v-for="(tile, index) in tiles"
             :key="tile.id"
             :transform="getTileTransform(index)"
           >
             <!-- 地格背景 -->
-            <rect 
+            <rect
               :class="['tile', tile.type, { active: index === playerPosition }]"
-              x="-20" y="-20"
-              width="40" height="40"
-              rx="6"
+              x="-30" y="-30"
+              width="60" height="60"
+              rx="10"
             />
             <!-- 地格图标 -->
-            <text 
+            <text
               class="tile-icon"
               text-anchor="middle"
               dominant-baseline="central"
-              y="2"
+              y="3"
             >
               {{ getTileIcon(tile.type) }}
             </text>
             <!-- 玩家标记 -->
-            <circle 
+            <circle
               v-if="index === playerPosition"
               class="player-marker"
-              r="8"
-              cy="28"
+              r="10"
+              cy="38"
             />
           </g>
         </g>
@@ -63,10 +63,10 @@ defineProps<{
 // 计算地格位置（环形矩形布局 - 格子只在矩形边缘）
 function getTileTransform(index: number): string {
   // 环形布局参数
-  const cols = 6 // 外框宽度（格数）
+  const cols = 5 // 外框宽度（格数）- 减少到5格让格子更大
   const rows = 4 // 外框高度（格数）
-  const tileSize = 40 // 格子边长
-  const gap = 45 // 间距
+  const tileSize = 60 // 格子边长
+  const gap = 72 // 间距（大于格子边长）
 
   // 计算环形路径的各边格子数
   const topEdge = cols      // 顶边格子数
@@ -74,20 +74,20 @@ function getTileTransform(index: number): string {
   const bottomEdge = cols    // 底边格子数
   const leftEdge = rows - 2  // 左边格子数（去掉左上角和左下角）
 
-  const totalTiles = topEdge + rightEdge + bottomEdge + leftEdge // 总格子数 = 6 + 3 + 6 + 2 = 17
+  const totalTiles = topEdge + rightEdge + bottomEdge + leftEdge // 总格子数 = 5 + 3 + 5 + 2 = 15
 
   // 超出范围的格子放在中间
   if (index >= totalTiles) {
-    const x = 150
-    const y = 160
+    const x = 190
+    const y = 200
     return `translate(${x}, ${y})`
   }
 
   // 计算居中偏移
   const totalWidth = cols * gap
   const totalHeight = rows * gap
-  const startX = (300 - totalWidth) / 2 + gap / 2
-  const startY = (300 - totalHeight) / 2 + gap / 2
+  const startX = (380 - totalWidth) / 2 + gap / 2
+  const startY = (400 - totalHeight) / 2 + gap / 2
 
   let col = 0
   let row = 0
@@ -159,7 +159,7 @@ function getEventText(tile: MapTile): string {
   border-radius: 12px;
   padding: 8px;
   border: 1px solid #3a3a5a;
-  min-height: 280px;
+  min-height: 360px;
 }
 
 .map-wrapper {
@@ -172,21 +172,21 @@ function getEventText(tile: MapTile): string {
 .map-svg {
   width: 100%;
   height: 100%;
-  max-width: 280px;
-  max-height: 280px;
+  max-width: 340px;
+  max-height: 360px;
 }
 
 .tile {
   fill: #2a2a4a;
   stroke: #3a3a5a;
-  stroke-width: 1;
+  stroke-width: 2;
   transition: all 0.3s ease;
 }
 
 .tile.active {
   stroke: #d4af37;
-  stroke-width: 2;
-  filter: drop-shadow(0 0 8px rgba(212, 175, 55, 0.5));
+  stroke-width: 3;
+  filter: drop-shadow(0 0 12px rgba(212, 175, 55, 0.6));
 }
 
 .tile.resource { fill: #2e4a2e; }
@@ -197,7 +197,7 @@ function getEventText(tile: MapTile): string {
 .tile.special { fill: #2e3a4a; }
 
 .tile-icon {
-  font-size: 18px;
+  font-size: 28px;
   fill: white;
   pointer-events: none;
 }
@@ -205,7 +205,7 @@ function getEventText(tile: MapTile): string {
 .player-marker {
   fill: #d4af37;
   stroke: #fff;
-  stroke-width: 2;
+  stroke-width: 3;
   animation: pulse 1.5s infinite;
 }
 
