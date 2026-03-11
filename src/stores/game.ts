@@ -269,7 +269,7 @@ export const useGameStore = defineStore('game', () => {
           setTimeout(() => {
             toast.visible = false
             toast.message = ''
-          }, 700)
+          }, 1200)
         }
       }
     }
