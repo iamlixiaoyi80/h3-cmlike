@@ -87,7 +87,6 @@ export const useGameStore = defineStore('game', () => {
   const isRolling = ref(false)
   const canStop = ref(false)
   const showResult = ref(false)      // 显示掷骰结果
-  const readyToMove = ref(false)     // 准备移动（等待玩家确认）
 
   // 玩家位置
   const playerPosition = ref(0)
@@ -168,7 +167,7 @@ export const useGameStore = defineStore('game', () => {
   
   // 掷骰子
   function startRoll() {
-    if (diceCount.value <= 0 || isRolling.value || readyToMove.value) return
+    if (diceCount.value <= 0 || isRolling.value || isMoving.value) return
     diceCount.value--
     isRolling.value = true
     canStop.value = true
@@ -177,26 +176,19 @@ export const useGameStore = defineStore('game', () => {
   }
 
   // 停止骰子
-  function stopRoll() {
+  async function stopRoll() {
     if (!canStop.value) return
     // 生成最终点数
     diceValue.value = Math.floor(Math.random() * 6) + 1
     isRolling.value = false
     canStop.value = false
     showResult.value = true
-    readyToMove.value = true
-  }
 
-  // 确认移动
-  async function confirmMove() {
-    if (!readyToMove.value) return
-    readyToMove.value = false
-    showResult.value = false
-
-    // 移动玩家
+    // 自动开始移动
     await movePlayer(diceValue.value)
+    showResult.value = false
   }
-  
+
   // 移动玩家（逐步移动，每格300ms）
   async function movePlayer(steps: number) {
     if (isMoving.value) return
@@ -328,7 +320,6 @@ export const useGameStore = defineStore('game', () => {
     isRolling,
     canStop,
     showResult,
-    readyToMove,
     playerPosition,
     isMoving,
     eventMessage,
@@ -340,7 +331,6 @@ export const useGameStore = defineStore('game', () => {
     selectRace,
     startRoll,
     stopRoll,
-    confirmMove,
     recruitCreature,
     restoreDice
   }

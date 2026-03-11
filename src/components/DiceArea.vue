@@ -10,9 +10,9 @@
 
     <!-- 掷骰子按钮 -->
     <button
-      v-if="!isRolling && !showResult && !readyToMove"
+      v-if="!isRolling && !showResult"
       class="roll-btn"
-      :disabled="diceCount <= 0"
+      :disabled="diceCount <= 0 || isMoving"
       @click="handleRoll"
     >
       <span class="btn-icon">🎲</span>
@@ -30,16 +30,12 @@
     </button>
 
     <!-- 结果显示 -->
-    <div v-if="showResult && readyToMove" class="result-display">
+    <div v-if="showResult" class="result-display">
       <div class="result-text">
         <span class="result-label">你掷出了</span>
         <span class="result-value">{{ diceValue }}</span>
         <span class="result-label">点！</span>
       </div>
-      <button class="move-btn" @click="handleConfirmMove">
-        <span class="btn-icon">▶️</span>
-        <span class="btn-text">开始移动</span>
-      </button>
     </div>
 
     <!-- 操作提示 -->
@@ -66,17 +62,16 @@ const props = defineProps<{
   isRolling: boolean
   canStop: boolean
   showResult: boolean
-  readyToMove: boolean
+  isMoving: boolean
 }>()
 
 const emit = defineEmits<{
   roll: []
   stop: []
-  confirmMove: []
 }>()
 
 function handleRoll() {
-  if (props.diceCount > 0 && !props.isRolling && !props.readyToMove) {
+  if (props.diceCount > 0 && !props.isRolling && !props.isMoving) {
     emit('roll')
   }
 }
@@ -87,9 +82,6 @@ function handleStop() {
   }
 }
 
-function handleConfirmMove() {
-  emit('confirmMove')
-}
 </script>
 
 <style scoped>
