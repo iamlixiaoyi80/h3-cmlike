@@ -91,9 +91,17 @@ export const useGameStore = defineStore('game', () => {
   // 玩家位置
   const playerPosition = ref(0)
   const isMoving = ref(false)
-  const eventMessage = ref<string>('')
-  const eventMessageQueue = ref<string[]>([]) // 消息队列
-  const isShowingEventMessage = ref(false) // 是否正在显示消息
+
+  // 事件提示多位置显示
+  interface EventToast {
+    message: string
+    visible: boolean
+  }
+
+  const MAX_TOASTS = 4 // 最大同时显示数量
+  const eventToasts = ref<EventToast[]>(
+    Array(MAX_TOASTS).fill(null).map(() => ({ message: '', visible: false }))
+  )
   
   // 资源
   const resources = ref<Resources>({
@@ -218,7 +226,7 @@ export const useGameStore = defineStore('game', () => {
     isMoving.value = false
   }
 
-  // 显示事件消息（添加到队列）
+  // 显示事件消息（多位置同时显示）
   function showEventMessage(tile: MapTile) {
     let message = ''
     switch (tile.type) {
@@ -248,38 +256,23 @@ export const useGameStore = defineStore('game', () => {
     }
 
     if (message) {
-      eventMessageQueue.value.push(message)
-      // 如果没有正在显示的消息，立即显示
-      if (!isShowingEventMessage.value) {
-        processNextEventMessage()
+      // 找到第一个空闲位置
+      const freeSlot = eventToasts.value.findIndex(toast => !toast.visible)
+      if (freeSlot !== -1) {
+        // 显示在该位置
+        const toast = eventToasts.value[freeSlot]
+        if (toast) {
+          toast.message = message
+          toast.visible = true
+
+          // 3秒后隐藏并释放位置
+          setTimeout(() => {
+            toast.visible = false
+            toast.message = ''
+          }, 3000)
+        }
       }
     }
-  }
-
-  // 处理队列中的下一条消息
-  function processNextEventMessage() {
-    // 如果队列为空，清除显示状态
-    if (eventMessageQueue.value.length === 0) {
-      isShowingEventMessage.value = false
-      eventMessage.value = ''
-      return
-    }
-
-    // 取出下一条消息
-    const message = eventMessageQueue.value.shift()
-    if (!message) {
-      isShowingEventMessage.value = false
-      return
-    }
-
-    // 显示消息
-    isShowingEventMessage.value = true
-    eventMessage.value = message
-
-    // 3秒后处理下一条
-    setTimeout(() => {
-      processNextEventMessage()
-    }, 3000)
   }
 
   // 获取资源名称
@@ -354,9 +347,7 @@ export const useGameStore = defineStore('game', () => {
     showResult,
     playerPosition,
     isMoving,
-    eventMessage,
-    eventMessageQueue,
-    isShowingEventMessage,
+    eventToasts,
     resources,
     castle,
     heroes,

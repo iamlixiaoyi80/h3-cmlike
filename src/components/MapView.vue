@@ -42,9 +42,15 @@
       <span class="event-text">{{ getEventText(currentTile) }}</span>
     </div>
 
-    <!-- 事件消息 -->
-    <div v-if="eventMessage" class="event-message">
-      {{ eventMessage }}
+    <!-- 事件消息（多位置显示） -->
+    <div
+      v-for="(toast, index) in eventToasts"
+      v-show="toast.visible"
+      :key="index"
+      class="event-message"
+      :style="{ top: `${10 + index * 8}%` }"
+    >
+      {{ toast.message }}
     </div>
   </div>
 </template>
@@ -56,7 +62,7 @@ defineProps<{
   tiles: MapTile[]
   playerPosition: number
   currentTile: MapTile
-  eventMessage: string
+  eventToasts: Array<{ message: string; visible: boolean }>
 }>()
 
 // 计算地格位置（完整闭环矩形布局 - 类似 Monopoly 棋盘）
@@ -234,18 +240,17 @@ function getEventText(tile: MapTile): string {
 
 .event-message {
   position: fixed;
-  top: 15%;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 16px 24px;
+  padding: 12px 20px;
   background: rgba(0, 0, 0, 0.85);
   border: 2px solid rgba(212, 175, 55, 0.6);
   border-radius: 12px;
   color: #d4af37;
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 600;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), 0 0 16px rgba(212, 175, 55, 0.3);
@@ -254,12 +259,13 @@ function getEventText(tile: MapTile): string {
   animation: fadeInOut 3s ease-in-out forwards;
   max-width: 80%;
   text-align: center;
+  white-space: nowrap;
 }
 
 @keyframes fadeInOut {
   0% {
     opacity: 0;
-    transform: translateX(-50%) translateY(-20px) scale(0.9);
+    transform: translateX(-50%) translateY(-10px) scale(0.9);
   }
   10% {
     opacity: 1;
@@ -271,7 +277,7 @@ function getEventText(tile: MapTile): string {
   }
   100% {
     opacity: 0;
-    transform: translateX(-50%) translateY(-20px) scale(0.9);
+    transform: translateX(-50%) translateY(-10px) scale(0.9);
   }
 }
 </style>

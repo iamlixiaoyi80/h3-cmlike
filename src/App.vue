@@ -13,7 +13,7 @@
         :tiles="mapTiles"
         :playerPosition="playerPosition"
         :currentTile="mapTiles[playerPosition]!"
-        :eventMessage="eventMessage"
+        :eventToasts="eventToasts"
       />
 
       <!-- 骰子区域 -->
@@ -87,7 +87,7 @@ const {
   canStop,
   showResult,
   isMoving,
-  eventMessage
+  eventToasts
 } = storeToRefs(store)
 const { selectRace, startRoll, stopRoll, recruitCreature } = store
 
