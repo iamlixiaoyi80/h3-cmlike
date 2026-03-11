@@ -92,6 +92,8 @@ export const useGameStore = defineStore('game', () => {
   const playerPosition = ref(0)
   const isMoving = ref(false)
   const eventMessage = ref<string>('')
+  const eventMessageQueue = ref<string[]>([]) // 消息队列
+  const isShowingEventMessage = ref(false) // 是否正在显示消息
   
   // 资源
   const resources = ref<Resources>({
@@ -216,37 +218,67 @@ export const useGameStore = defineStore('game', () => {
     isMoving.value = false
   }
 
-  // 显示事件消息
+  // 显示事件消息（添加到队列）
   function showEventMessage(tile: MapTile) {
+    let message = ''
     switch (tile.type) {
       case 'resource':
         if (tile.resource && tile.amount) {
-          eventMessage.value = `💰 获得了 ${tile.amount} ${getResourceName(tile.resource)}！`
+          message = `💰 获得了 ${tile.amount} ${getResourceName(tile.resource)}！`
         }
         break
       case 'creature':
-        eventMessage.value = `🐉 发现了生物！已加入城堡。`
+        message = `🐉 发现了生物！已加入城堡。`
         break
       case 'chest':
         const gold = Math.floor(Math.random() * 500) + 100
-        eventMessage.value = `🎁 打开宝箱，获得了 ${gold} 金币！`
+        message = `🎁 打开宝箱，获得了 ${gold} 金币！`
         break
       case 'treasure':
-        eventMessage.value = `📦 发现了宝物！`
+        message = `📦 发现了宝物！`
         break
       case 'attack':
-        eventMessage.value = `⚔️ 遭遇敌人！可以发起攻击！`
+        message = `⚔️ 遭遇敌人！可以发起攻击！`
         break
       case 'special':
-        eventMessage.value = `✨ 触发特殊事件！`
+        message = `✨ 触发特殊事件！`
         break
       default:
-        eventMessage.value = ''
+        message = ''
     }
 
-    // 3秒后清除消息
-    setTimeout(() => {
+    if (message) {
+      eventMessageQueue.value.push(message)
+      // 如果没有正在显示的消息，立即显示
+      if (!isShowingEventMessage.value) {
+        processNextEventMessage()
+      }
+    }
+  }
+
+  // 处理队列中的下一条消息
+  function processNextEventMessage() {
+    // 如果队列为空，清除显示状态
+    if (eventMessageQueue.value.length === 0) {
+      isShowingEventMessage.value = false
       eventMessage.value = ''
+      return
+    }
+
+    // 取出下一条消息
+    const message = eventMessageQueue.value.shift()
+    if (!message) {
+      isShowingEventMessage.value = false
+      return
+    }
+
+    // 显示消息
+    isShowingEventMessage.value = true
+    eventMessage.value = message
+
+    // 3秒后处理下一条
+    setTimeout(() => {
+      processNextEventMessage()
     }, 3000)
   }
 
@@ -323,6 +355,8 @@ export const useGameStore = defineStore('game', () => {
     playerPosition,
     isMoving,
     eventMessage,
+    eventMessageQueue,
+    isShowingEventMessage,
     resources,
     castle,
     heroes,
