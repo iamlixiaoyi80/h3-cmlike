@@ -1,7 +1,7 @@
 <template>
   <div class="map-container">
     <div class="map-wrapper">
-      <svg class="map-svg" viewBox="0 0 300 300">
+      <svg class="map-svg" viewBox="0 0 300 320">
         <!-- 地图路径 -->
         <g class="tiles">
           <g 
@@ -60,15 +60,25 @@ defineProps<{
   eventMessage: string
 }>()
 
-// 计算地格位置（环形布局）
+// 计算地格位置（矩形网格布局）
 function getTileTransform(index: number): string {
-  const total = 24
-  const angle = (index / total) * 2 * Math.PI - Math.PI / 2
-  const radius = 120 // 增加半径，确保格子不重叠
-  const cx = 150
-  const cy = 150
-  const x = cx + radius * Math.cos(angle)
-  const y = cy + radius * Math.sin(angle)
+  const cols = 5 // 每行5个格子
+  const rows = 4 // 共4行
+  const tileSize = 40 // 格子边长
+  const gap = 50 // 间距（大于格子边长，确保不重叠）
+
+  const col = index % cols
+  const row = Math.floor(index / cols)
+
+  // 计算居中偏移
+  const totalWidth = cols * gap
+  const totalHeight = rows * gap
+  const offsetX = (300 - totalWidth) / 2 + gap / 2
+  const offsetY = (300 - totalHeight) / 2 + gap / 2
+
+  const x = offsetX + col * gap
+  const y = offsetY + row * gap
+
   return `translate(${x}, ${y})`
 }
 
