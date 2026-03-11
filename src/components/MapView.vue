@@ -30,7 +30,6 @@
               v-if="index === playerPosition"
               class="player-marker"
               r="10"
-              cy="38"
             />
           </g>
         </g>
