@@ -265,11 +265,11 @@ export const useGameStore = defineStore('game', () => {
           toast.message = message
           toast.visible = true
 
-          // 3秒后隐藏并释放位置
+          // 0.7秒后隐藏并释放位置
           setTimeout(() => {
             toast.visible = false
             toast.message = ''
-          }, 3000)
+          }, 700)
         }
       }
     }
