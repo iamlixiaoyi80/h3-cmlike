@@ -9,10 +9,11 @@
       <ResourceBar :resources="resources" :power="power" />
       
       <!-- 地图区域 -->
-      <MapView 
-        :tiles="mapTiles" 
+      <MapView
+        :tiles="mapTiles"
         :playerPosition="playerPosition"
         :currentTile="mapTiles[playerPosition]!"
+        :eventMessage="eventMessage"
       />
       
       <!-- 城堡信息 -->
@@ -46,7 +47,7 @@ import HeroBar from './components/HeroBar.vue'
 import DiceArea from './components/DiceArea.vue'
 
 const store = useGameStore()
-const { gamePhase, resources, power, mapTiles, playerPosition, castle, heroes, diceCount, maxDice, diceValue, isRolling, canStop } = storeToRefs(store)
+const { gamePhase, resources, power, mapTiles, playerPosition, castle, heroes, diceCount, maxDice, diceValue, isRolling, canStop, eventMessage } = storeToRefs(store)
 const { selectRace, startRoll, stopRoll, recruitCreature } = store
 </script>
 

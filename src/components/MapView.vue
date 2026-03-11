@@ -42,6 +42,11 @@
       <span class="event-icon">{{ getTileIcon(currentTile.type) }}</span>
       <span class="event-text">{{ getEventText(currentTile) }}</span>
     </div>
+
+    <!-- 事件消息 -->
+    <div v-if="eventMessage" class="event-message">
+      {{ eventMessage }}
+    </div>
   </div>
 </template>
 
@@ -52,13 +57,14 @@ defineProps<{
   tiles: MapTile[]
   playerPosition: number
   currentTile: MapTile
+  eventMessage: string
 }>()
 
 // 计算地格位置（环形布局）
 function getTileTransform(index: number): string {
   const total = 24
   const angle = (index / total) * 2 * Math.PI - Math.PI / 2
-  const radius = 110
+  const radius = 120 // 增加半径，确保格子不重叠
   const cx = 150
   const cy = 150
   const x = cx + radius * Math.cos(angle)
@@ -181,5 +187,31 @@ function getEventText(tile: MapTile): string {
 .event-text {
   color: #d4af37;
   font-weight: bold;
+}
+
+.event-message {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  background: rgba(212, 175, 55, 0.15);
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  border-radius: 8px;
+  margin-top: 8px;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 </style>

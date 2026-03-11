@@ -75,9 +75,11 @@ export const useGameStore = defineStore('game', () => {
   const diceValue = ref(1)
   const isRolling = ref(false)
   const canStop = ref(false)
-  
+
   // 玩家位置
   const playerPosition = ref(0)
+  const isMoving = ref(false)
+  const eventMessage = ref<string>('')
   
   // 资源
   const resources = ref<Resources>({
@@ -159,18 +161,77 @@ export const useGameStore = defineStore('game', () => {
     movePlayer(diceValue.value)
   }
   
-  // 移动玩家
-  function movePlayer(steps: number) {
+  // 移动玩家（逐步移动，每格300ms）
+  async function movePlayer(steps: number) {
+    if (isMoving.value) return
+    isMoving.value = true
+
     const totalTiles = mapTiles.value.length
+
     for (let i = 0; i < steps; i++) {
+      // 移动到下一格
       playerPosition.value = (playerPosition.value + 1) % totalTiles
+
+      // 获取当前地格
+      const tile = mapTiles.value[playerPosition.value]
+      if (tile) {
+        // 触发事件
+        triggerTileEvent(tile)
+        // 显示事件消息
+        showEventMessage(tile)
+      }
+
+      // 等待300ms再移动下一格
+      await new Promise(resolve => setTimeout(resolve, 300))
     }
-    
-    // 触发事件
-    const tile = mapTiles.value[playerPosition.value]
-    if (tile) {
-      triggerTileEvent(tile)
+
+    isMoving.value = false
+  }
+
+  // 显示事件消息
+  function showEventMessage(tile: MapTile) {
+    switch (tile.type) {
+      case 'resource':
+        if (tile.resource && tile.amount) {
+          eventMessage.value = `💰 获得了 ${tile.amount} ${getResourceName(tile.resource)}！`
+        }
+        break
+      case 'creature':
+        eventMessage.value = `🐉 发现了生物！已加入城堡。`
+        break
+      case 'chest':
+        const gold = Math.floor(Math.random() * 500) + 100
+        eventMessage.value = `🎁 打开宝箱，获得了 ${gold} 金币！`
+        break
+      case 'treasure':
+        eventMessage.value = `📦 发现了宝物！`
+        break
+      case 'attack':
+        eventMessage.value = `⚔️ 遭遇敌人！可以发起攻击！`
+        break
+      case 'special':
+        eventMessage.value = `✨ 触发特殊事件！`
+        break
+      default:
+        eventMessage.value = ''
     }
+
+    // 3秒后清除消息
+    setTimeout(() => {
+      eventMessage.value = ''
+    }, 3000)
+  }
+
+  // 获取资源名称
+  function getResourceName(resource: keyof Resources): string {
+    const names: Record<string, string> = {
+      gold: '金币',
+      wood: '木材',
+      ore: '矿石',
+      crystal: '水晶',
+      gems: '宝石'
+    }
+    return names[resource] || resource
   }
   
   // 触发地格事件
@@ -229,6 +290,8 @@ export const useGameStore = defineStore('game', () => {
     isRolling,
     canStop,
     playerPosition,
+    isMoving,
+    eventMessage,
     resources,
     castle,
     heroes,
