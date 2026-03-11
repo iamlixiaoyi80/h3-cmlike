@@ -233,28 +233,45 @@ function getEventText(tile: MapTile): string {
 }
 
 .event-message {
+  position: fixed;
+  top: 15%;
+  left: 50%;
+  transform: translateX(-50%);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 12px;
-  background: rgba(212, 175, 55, 0.15);
-  border: 1px solid rgba(212, 175, 55, 0.3);
-  border-radius: 8px;
-  margin-top: 8px;
-  color: #fff;
-  font-size: 14px;
-  font-weight: 500;
-  animation: slideIn 0.3s ease-out;
+  padding: 16px 24px;
+  background: rgba(0, 0, 0, 0.85);
+  border: 2px solid rgba(212, 175, 55, 0.6);
+  border-radius: 12px;
+  color: #d4af37;
+  font-size: 18px;
+  font-weight: 600;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), 0 0 16px rgba(212, 175, 55, 0.3);
+  z-index: 9999;
+  pointer-events: none;
+  animation: fadeInOut 3s ease-in-out forwards;
+  max-width: 80%;
+  text-align: center;
 }
 
-@keyframes slideIn {
-  from {
+@keyframes fadeInOut {
+  0% {
     opacity: 0;
-    transform: translateY(-10px);
+    transform: translateX(-50%) translateY(-20px) scale(0.9);
   }
-  to {
+  10% {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
+  80% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-20px) scale(0.9);
   }
 }
 </style>
